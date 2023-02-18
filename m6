@@ -53,9 +53,9 @@ function m6()
     
     
     --Ensure we are fully homed on all axises
-    local xHomed = mc.mcAxisIsHomed(inst,xAxisNb);
-    local yHomed = mc.mcAxisIsHomed(inst,yAxisNb);
-    local zHomed = mc.mcAxisIsHomed(inst,zAxisNb);
+    local xHomed = mc.mcAxisIsHomed(inst,mc.X_AXIS);
+    local yHomed = mc.mcAxisIsHomed(inst,mc.Y_AXIS);
+    local zHomed = mc.mcAxisIsHomed(inst,mc.Z_AXIS);
     if (xHomed == 0 or yHomed == 0 or zHomed == 0)
     then
        
