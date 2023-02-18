@@ -23,8 +23,8 @@ function m6()
     local fColletAtProbeZCoordinate = -7; --This is the z position where the end of the spinde is about to touch the sensor, leave about 0.1in clearance
     local noToolLen = 5; --Length to use if tool lenght = 0 (make sure NO tools can be longer than this);  --was 137
     
-    local zRaiseForToolChange = -1.1;
-    local FinalSafeZ_AfterChange = -1.1;
+    local zRaiseForToolChange = -0.1;
+    local FinalSafeZ_AfterChange = -0.1;
     
     local probeCode = "G31"; --G code of the probe to use
     local fProbePrepSpeed = 10; --was 50
@@ -120,7 +120,7 @@ function m6()
     
     --Move Z to safe pos
     MyNum = zRaiseForToolChange
-    MyNum = wx.wxGetNumberFromUser("Confim Z Movement", "Z Axis will move up to Z machine coordinate: ", "Z Movement Confirmation", zRaiseForToolChange, -0.5, -2)--Default, min, max
+    MyNum = wx.wxGetNumberFromUser("Confim Z Movement", "Z Axis will move up to Z machine coordinate: ", "Z Movement Confirmation", zRaiseForToolChange, -2, 0)--Default, min, max
     
       if (MyNum == -1) then  --1 is cancel
        
@@ -150,7 +150,7 @@ function m6()
        local probestart = fColletAtProbeZCoordinate + fExtraProbeDistance + currentToolLen;
     -------------------------------------------------------------------------------------------
     MyNum = probestart
-    MyNum = wx.wxGetNumberFromUser("Confim Movement to Tool Setter", "Z Axis will move down to Z machine coordinate: ", "Z Movement Confirmation", probestart, -0.5, -2)--Default, min, max
+    MyNum = wx.wxGetNumberFromUser("Confim Movement to Tool Setter", "Z Axis will move down to Z machine coordinate: ", "Z Movement Confirmation", probestart, -600, 600)--Default, min, max
     
       if (MyNum == -1) then  --1 is cancel
        
@@ -288,7 +288,7 @@ function m6()
     
     -- Move back to a safe Z position
     MyNum = FinalSafeZ_AfterChange
-    MyNum = wx.wxGetNumberFromUser("Confim Movement to safe Z height", "Z Axis will move UP to Z machine coordinate: ", "Z Movement Confirmation", FinalSafeZ_AfterChange, -0.5, -2)--Default, min, max
+    MyNum = wx.wxGetNumberFromUser("Confim Movement to safe Z height", "Z Axis will move UP to Z machine coordinate: ", "Z Movement Confirmation", FinalSafeZ_AfterChange, -600, 600)--Default, min, max
     
       if (MyNum == -1) then  --1 is cancel
        
