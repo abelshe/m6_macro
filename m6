@@ -23,14 +23,14 @@ function m6()
     local fColletAtProbeZCoordinate = -7; --This is the z position where the end of the spinde is about to touch the sensor, leave about 0.1in clearance
     local noToolLen = 5; --Length to use if tool lenght = 0 (make sure NO tools can be longer than this);  --was 137
     
-    local zRaiseForToolChange = -1;
-    local FinalSafeZ_AfterChange = -1;
+    local zRaiseForToolChange = -1.1;
+    local FinalSafeZ_AfterChange = -1.1;
     
     local probeCode = "G31"; --G code of the probe to use
     local fProbePrepSpeed = 10; --was 50
     local fProbeSpeed = 10;
     local ProbeOperationDistance = -2; -- Length of Probe move before giving up
-    local fExtraProbeDistance = 1; --was 10
+    local fExtraProbeDistance = 0.1; --was 10
     
   --Get positions before moving to do tool change
   local orgX, rc = mc.mcAxisGetMachinePos(inst, mc.X_AXIS) --Get the position of the X axis in Machine Position
