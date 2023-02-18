@@ -1,31 +1,41 @@
+--TODO
+-- [ ] Get x y position of tool changer in machine coordinates
+-- [ ] Test with q tips and foam 
+-- [ ] get value for fColletAtProbeZCoordinate 
+
+-- Code sections:
+-- Setup 
+-- Check axes for home 
+
+
+
+
+
 function m6()
     local inst = mc.mcGetInstance();
+    local posmode = mc.mcCntlGetPoundVar(inst, mc.SV_MOD_GROUP_3) --get the current mode so we can return to it when macro ends
+
     --mc.mcToolSetCurrent(inst, 2) -- DELETE THIS WHEN WORKS
     local didStrike = 0
-    local touchPlateXPos = -515; --X position (in machine coord) of the touch plate
-    local touchPlateYPos = -50; --Y position (in machine coord) of the touch plate
-    local toolChangeZ = -100; -- abs Z height to move the head for manual tool change by operator
-    local fColletAtProbeZCoordinate = -422.2020; --This is the z position where the end of the spinde is about to touch the sensor, leave about 0.1in clearance
-    local noToolLen = 137; --Length to use if tool lenght = 0 (make sure NO tools can be longer than this);
+    local touchPlateXPos = 2.57; --X position (in machine coord) of the touch plate
+    local touchPlateYPos = 1.01; --Y position (in machine coord) of the touch plate
+    local toolChangeZ = -0.1; -- abs Z height to move the head for manual tool change by operator
+    local fColletAtProbeZCoordinate = -7; --This is the z position where the end of the spinde is about to touch the sensor, leave about 0.1in clearance
+    local noToolLen = 5; --Length to use if tool lenght = 0 (make sure NO tools can be longer than this);  --was 137
     
-    local zRaiseForToolChange = -100;
-    local FinalSafeZ_AfterChange = -100;
+    local zRaiseForToolChange = -1;
+    local FinalSafeZ_AfterChange = -1;
     
-    local probeCode = "G31.1"; --G code of the probe to use
-    local fProbePrepSpeed = 50;
-    local fProbeSpeed = 50;
-    local ProbeOperationDistance = -160; -- Length of Probe move before giving up
-    local fExtraProbeDistance = 10;
+    local probeCode = "G31"; --G code of the probe to use
+    local fProbePrepSpeed = 10; --was 50
+    local fProbeSpeed = 10;
+    local ProbeOperationDistance = -2; -- Length of Probe move before giving up
+    local fExtraProbeDistance = 1; --was 10
     
-    --define motors mapping
-    local xAxisNb = 0;
-    local yAxisNb = 1;
-    local zAxisNb = 2;
-    
-    --Track original X/Y/Z position
-    local orgX = mc.mcAxisGetPos(inst,xAxisNb);
-    local orgY = mc.mcAxisGetPos(inst,yAxisNb);
-    local orgZ = mc.mcAxisGetPos(inst,zAxisNb);
+  --Get positions before moving to do tool change
+  local orgX, rc = mc.mcAxisGetMachinePos(inst, mc.X_AXIS) --Get the position of the X axis in Machine Position
+  local orgY, rc = mc.mcAxisGetMachinePos(inst, mc.Y_AXIS) --Get the position of the Y axis in Machine Position
+  local orgZ, rc = mc.mcAxisGetMachinePos(inst, mc.Z_AXIS) --Get the position of the Z axis in Machine Position
     
     local requestedTool = mc.mcToolGetSelected(inst);
     local newToolDesc = mc.mcToolGetDesc(inst,requestedTool);
@@ -110,7 +120,7 @@ function m6()
     
     --Move Z to safe pos
     MyNum = zRaiseForToolChange
-    MyNum = wx.wxGetNumberFromUser("Confim Z Movement", "Z Axis will move up to Z machine coordinate: ", "Z Movement Confirmation", zRaiseForToolChange, -600, 600)--Default, min, max
+    MyNum = wx.wxGetNumberFromUser("Confim Z Movement", "Z Axis will move up to Z machine coordinate: ", "Z Movement Confirmation", zRaiseForToolChange, -0.5, -2)--Default, min, max
     
       if (MyNum == -1) then  --1 is cancel
        
@@ -123,7 +133,7 @@ function m6()
        elseif (MyNum < -1) then
        zRaiseForToolChange = MyNum
        mc.mcCntlSetLastError(inst,"Z Axis moving to :"..zRaiseForToolChange);
-       mc.mcCntlGcodeExecuteWait(inst,"G21 G90 G53 G0 Z"..zRaiseForToolChange.."\nM5")
+       mc.mcCntlGcodeExecuteWait(inst,"G20 G90 G53 G0 Z"..zRaiseForToolChange.."\nM5")
        
      end
     ---------------------------------------------
@@ -140,7 +150,7 @@ function m6()
        local probestart = fColletAtProbeZCoordinate + fExtraProbeDistance + currentToolLen;
     -------------------------------------------------------------------------------------------
     MyNum = probestart
-    MyNum = wx.wxGetNumberFromUser("Confim Movement to Tool Setter", "Z Axis will move down to Z machine coordinate: ", "Z Movement Confirmation", probestart, -600, 600)--Default, min, max
+    MyNum = wx.wxGetNumberFromUser("Confim Movement to Tool Setter", "Z Axis will move down to Z machine coordinate: ", "Z Movement Confirmation", probestart, -0.5, -2)--Default, min, max
     
       if (MyNum == -1) then  --1 is cancel
        
@@ -154,8 +164,8 @@ function m6()
        
        probestart = MyNum
        
-       local GCODE = "G90 G53 G31.1 G0 Z"..probestart.." F"..fProbePrepSpeed
-        GCODE = ""..GCODE.." \n G91 G0 Z0 F"..fProbePrepSpeed.." \n G91 G31.1 Z"..ProbeOperationDistance.." F"..fProbeSpeed
+       local GCODE = "G90 G53 G31 G0 Z"..probestart.." F"..fProbePrepSpeed
+        GCODE = ""..GCODE.." \n G91 G0 Z0 F"..fProbePrepSpeed.." \n G91 G31 Z"..ProbeOperationDistance.." F"..fProbeSpeed
     
     -- Move to probe position and probe
        mc.mcCntlSetLastError(inst,"Moving to probe position and probing");
@@ -245,8 +255,8 @@ function m6()
        
        probestart = MyNum
        
-       GCODE = "G90 G53 G31.1 G0 Z"..probestart.." F"..fProbePrepSpeed
-        GCODE = ""..GCODE.." \n G91 G0 Z0 F"..fProbePrepSpeed.." \n G91 G31.1 Z"..ProbeOperationDistance.." F"..fProbeSpeed
+       GCODE = "G90 G53 G31 G0 Z"..probestart.." F"..fProbePrepSpeed
+        GCODE = ""..GCODE.." \n G91 G0 Z0 F"..fProbePrepSpeed.." \n G91 G31 Z"..ProbeOperationDistance.." F"..fProbeSpeed
        
        mc.mcCntlSetLastError(inst,"Z Move down to probe position: "..probestart);
        mc.mcCntlGcodeExecuteWait(inst,GCODE)
@@ -278,7 +288,7 @@ function m6()
     
     -- Move back to a safe Z position
     MyNum = FinalSafeZ_AfterChange
-    MyNum = wx.wxGetNumberFromUser("Confim Movement to safe Z height", "Z Axis will move UP to Z machine coordinate: ", "Z Movement Confirmation", FinalSafeZ_AfterChange, -600, 600)--Default, min, max
+    MyNum = wx.wxGetNumberFromUser("Confim Movement to safe Z height", "Z Axis will move UP to Z machine coordinate: ", "Z Movement Confirmation", FinalSafeZ_AfterChange, -0.5, -2)--Default, min, max
     
       if (MyNum == -1) then  --1 is cancel
        
