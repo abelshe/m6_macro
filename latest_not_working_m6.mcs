@@ -1,0 +1,341 @@
+--TODO
+-- [ ] Get x y position of tool changer in machine coordinates
+-- [ ] Test with q tips and foam 
+-- [ ] get value for fColletAtProbeZCoordinate 
+
+-- Code sections:
+-- Setup 
+-- Check axes for home 
+
+
+
+
+
+function m6()
+    local inst = mc.mcGetInstance();
+    local posmode = mc.mcCntlGetPoundVar(inst, mc.SV_MOD_GROUP_3) --get the current mode so we can return to it when macro ends
+
+    --mc.mcToolSetCurrent(inst, 2) -- DELETE THIS WHEN WORKS
+    local didStrike = 0
+    local touchPlateXPos = 2.57; --X position (in machine coord) of the touch plate
+    local touchPlateYPos = 1.01; --Y position (in machine coord) of the touch plate
+    local toolChangeZ = -0.1; -- abs Z height to move the head for manual tool change by operator
+    local fColletAtProbeZCoordinate = -7; --This is the z position where the end of the spinde is about to touch the sensor, leave about 0.1in clearance
+    local noToolLen = 5; --Length to use if tool lenght = 0 (make sure NO tools can be longer than this);  --was 137
+    
+    local zRaiseForToolChange = -0.1;
+    local FinalSafeZ_AfterChange = -0.1;
+    
+    local probeCode = "G31"; --G code of the probe to use
+    local fProbePrepSpeed = 10; --was 50
+    local fProbeSpeed = 10;
+    local ProbeOperationDistance = -2; -- Length of Probe move before giving up
+    local fExtraProbeDistance = 0.1; --was 10
+    
+  --Get positions before moving to do tool change
+  local orgX, rc = mc.mcAxisGetMachinePos(inst, mc.X_AXIS) --Get the position of the X axis in Machine Position
+  local orgY, rc = mc.mcAxisGetMachinePos(inst, mc.Y_AXIS) --Get the position of the Y axis in Machine Position
+  local orgZ, rc = mc.mcAxisGetMachinePos(inst, mc.Z_AXIS) --Get the position of the Z axis in Machine Position
+    
+    local requestedTool = mc.mcToolGetSelected(inst);
+    local newToolDesc = mc.mcToolGetDesc(inst,requestedTool);
+    
+    --if (newToolDesc == "") then
+    
+       --newToolDesc = "New Tool"
+       
+    --end if
+    
+    local currenttool = mc.mcToolGetCurrent(inst);
+    local currentToolLen = mc.mcToolGetData(inst,mc.MTOOL_MILL_HEIGHT,currenttool);
+    
+    ------------------------------------------------------------------------------
+    
+    
+    --Ensure we are fully homed on all axises
+    local xHomed = mc.mcAxisIsHomed(inst,mc.X_AXIS);
+    local yHomed = mc.mcAxisIsHomed(inst,mc.Y_AXIS);
+    local zHomed = mc.mcAxisIsHomed(inst,mc.Z_AXIS);
+    if (xHomed == 0 or yHomed == 0 or zHomed == 0)
+    then
+       
+       mc.mcCntlSetLastError(inst,"M6 – Tool change : At least one axis is not homed");
+       mc.mcCntlEStop(inst);
+       
+    return;
+    end
+    
+    
+    mc.mcCntlSetLastError(inst,"Machine is homed - Tool change may proceed.");
+    -----------------------------------------------------
+    
+    mc.mcCntlSetLastError(inst,"M6 – Processing tool change from"..currenttool.." to "..requestedTool);
+    
+    --Ensure a tool change is needed
+    if requestedTool == currenttool
+    
+    then
+       
+       mc.mcCntlSetLastError(inst,"M6 – Current tool and Requested tool are the same, nothing to do");
+       return;
+       
+    end;
+    
+    --Ensure valid tool length, if not, use default value
+    if (currentToolLen <= 0.1)
+    then
+       currentToolLen = noToolLen;
+       mc.mcCntlSetLastError(inst,"Tool length not identified default tool length being used :"..currentToolLen);
+    end
+    
+    
+           
+    -- end
+    --local MyNum = wx.wxGetNumberFromUser("Select or enter a feed rate", "Feed Rate:", "Teach Feed Rate", 50, 1, 1500) --Default, min, max
+    
+    MyNum = wx.wxGetNumberFromUser("Confim current tool tip is less than", "Tool Length to spindle nose:", "Tool Length Confirmation", currentToolLen, 0, 300)--Default, min, max
+    
+      if (MyNum == -1) then  --1 is cancel
+       
+          mc.mcCntlSetLastError(inst,"Tool Length not set.");
+          mc.mcCntlEStop(inst);
+       
+           
+       return
+        
+       elseif (MyNum >= 0.1) then
+     
+       currentToolLen = MyNum
+       
+        mc.mcCntlSetLastError(inst,"Tool Length set to: "..currentToolLen)
+       
+     end
+     
+    -----------------------
+    --Keep of copy of the current postion mode, units, feed as we are going to change them
+    local positionMode = mc.mcCntlGetPoundVar(inst,4003);
+    local units = mc.mcCntlGetPoundVar(inst,4006);
+    local feedRate = mc.mcCntlGetPoundVar(inst, 2134);
+    
+    
+    --Move Z to safe pos
+    MyNum = zRaiseForToolChange
+    MyNum = wx.wxGetNumberFromUser("Confim Z Movement", "Z Axis will move up to Z machine coordinate: ", "Z Movement Confirmation", zRaiseForToolChange, -2, 0)--Default, min, max
+    
+      if (MyNum == -1) then  --1 is cancel
+       
+          mc.mcCntlSetLastError(inst,"Z move cancelled");
+          mc.mcCntlEStop(inst);
+       
+           
+       return
+        
+       elseif (MyNum < -1) then
+       zRaiseForToolChange = MyNum
+       mc.mcCntlSetLastError(inst,"Z Axis moving to :"..zRaiseForToolChange);
+       mc.mcCntlGcodeExecuteWait(inst,"G20 G90 G53 G0 Z"..zRaiseForToolChange.."\nM5")
+       
+     end
+    ---------------------------------------------
+    
+    
+    --Goto x/y of touch pad
+    
+    mc.mcCntlSetLastError(inst,"Moving tool over tool setter X"..touchPlateXPos.." Y"..touchPlateYPos);
+    mc.mcCntlGcodeExecuteWait(inst, "G90 G53 G0 X"..touchPlateXPos.." Y"..touchPlateYPos);
+    
+    
+    --Compute the z position we need to move the head before probing
+    
+       local probestart = fColletAtProbeZCoordinate + fExtraProbeDistance + currentToolLen;
+    -------------------------------------------------------------------------------------------
+    MyNum = probestart
+    MyNum = wx.wxGetNumberFromUser("Confim Movement to Tool Setter", "Z Axis will move down to Z machine coordinate: ", "Z Movement Confirmation", probestart, -600, 600)--Default, min, max
+    
+      if (MyNum == -1) then  --1 is cancel
+       
+          mc.mcCntlSetLastError(inst,"Probe move cancelled");
+          mc.mcCntlEStop(inst);
+       
+           
+       return
+        
+       elseif (MyNum < 0) then
+       
+       probestart = MyNum
+       
+       local GCODE = "G90 G53 G31 G0 Z"..probestart.." F"..fProbePrepSpeed
+        GCODE = ""..GCODE.." \n G91 G0 Z0 F"..fProbePrepSpeed.." \n G91 G31 Z"..ProbeOperationDistance.." F"..fProbeSpeed
+    
+    -- Move to probe position and probe
+       mc.mcCntlSetLastError(inst,"Moving to probe position and probing");
+       mc.mcCntlGcodeExecuteWait(inst,GCODE)
+       
+     end    
+       
+       
+       
+    -----------------------------------------------
+    
+       
+    --Make sure the probe made contact
+    didStrike = mc.mcCntlProbeGetStrikeStatus(inst);
+    if (didStrike == 0.0)
+    then
+       
+       mc.mcCntlSetLastError(inst,"Probe did not make contact (Alex's error')");
+	   print("Didstrike status", didStrike);
+       mc.mcCntlEStop(inst);
+    
+    end
+    
+    
+    mc.mcCntlSetLastError(inst, "Probe strike occured: ", didStrike," Tool Change to continue.");
+    --------------------------------------------------
+    
+    -- Sets the height for the 1st tool
+    local currentToolZ = mc.mcAxisGetPos(inst,2);
+    
+    -- Move Z back to safe pos for tool change
+    -------------------------------------------------------------------------------------------
+    MyNum = probestart
+    MyNum = wx.wxGetNumberFromUser("Confim Movement to Safe Z height", "Z Axis will move UP to Z machine coordinate: ", "Z Movement Confirmation", toolChangeZ, -600, 600)--Default, min, max
+    
+      if (MyNum == -1) then  --1 is cancel
+       
+          mc.mcCntlSetLastError(inst,"Move up to safe Z cancelled");
+          mc.mcCntlEStop(inst);
+       
+           
+       return
+        
+       elseif (MyNum < 0) then
+          toolChangeZ = MyNum
+          mc.mcCntlSetLastError(inst,"Moving to machine Z"..toolChangeZ);
+          mc.mcCntlGcodeExecuteWait(inst, "G90 G53 G0 Z"..toolChangeZ);
+          
+     end    
+       
+       
+       
+    -----------------------------------------------
+    
+    --Prompt user
+    wx.wxMessageBox("Please change to tool number "..requestedTool.." ("..newToolDesc..") and press ENTER to continue");
+    
+    --At this point, the tool has been changed, recalc new values
+    currenttool = requestedTool;
+    currentToolLen = mc.mcToolGetData(inst,mc.MTOOL_MILL_HEIGHT,currenttool);
+    
+    if (currentToolLen <= 0.1)
+    then
+    currentToolLen = noToolLen;
+    mc.mcCntlSetLastError(inst,"No tool length identified, Default tool length being used: "..noToolLen);
+    
+    end
+    
+    
+    --Calculate new tool probe Z
+    probestart = fColletAtProbeZCoordinate + fExtraProbeDistance + currentToolLen;
+    
+    
+    --Move Z close the touch pad
+    -------------------------------------------------------------------------------------------
+    MyNum = probestart
+    MyNum = wx.wxGetNumberFromUser("Confim Movement to probing Z height", "Z Axis will move DOWN to Z machine coordinate: ", "Z Movement Confirmation", probestart, -600, 600)--Default, min, max
+    
+      if (MyNum == -1) then  --1 is cancel
+       
+          mc.mcCntlSetLastError(inst,"Move down to probing cancelled");
+          mc.mcCntlEStop(inst);
+       
+           
+       return
+        
+       elseif (MyNum < 0) then
+       
+       probestart = MyNum
+       
+       GCODE = "G90 G53 G31 G0 Z"..probestart.." F"..fProbePrepSpeed
+        GCODE = ""..GCODE.." \n G91 G0 Z0 F"..fProbePrepSpeed.." \n G91 G31 Z"..ProbeOperationDistance.." F"..fProbeSpeed
+       
+       mc.mcCntlSetLastError(inst,"Z Move down to probe position: "..probestart);
+       mc.mcCntlGcodeExecuteWait(inst,GCODE)
+    
+     end    
+       
+    -----------------------------------------------
+       -- Set Z to old tool probed Z for correct z height for new tool
+       mc.mcAxisSetPos(inst,2,currentToolZ);
+       
+    --Make sure the probe made contact
+    didStrike = mc.mcCntlProbeGetStrikeStatus(inst);
+    
+    if (didStrike == 0)
+    then
+       
+       mc.mcCntlSetLastError(inst,"Probe did not make contact");
+		print("Didstrike value:", didStrike);
+       mc.mcCntlEStop(inst);
+    
+    end
+    
+    
+    mc.mcCntlSetLastError(inst,"Probe strike #2 occured Tool Change to continue.");
+    --------------------------------------------------
+    
+    -- Change tool enditing
+    local rc = mc.mcToolSetCurrent(inst,requestedTool);
+    local newlyToolIdx = mc.mcToolGetCurrent(inst);
+    
+    -- Move back to a safe Z position
+    MyNum = FinalSafeZ_AfterChange
+    MyNum = wx.wxGetNumberFromUser("Confim Movement to safe Z height", "Z Axis will move UP to Z machine coordinate: ", "Z Movement Confirmation", FinalSafeZ_AfterChange, -600, 600)--Default, min, max
+    
+      if (MyNum == -1) then  --1 is cancel
+       
+          mc.mcCntlSetLastError(inst,"Move up to Safe Z cancelled");
+          mc.mcCntlEStop(inst);
+       
+           
+       return
+        
+       elseif (MyNum < 0) then
+       
+       FinalSafeZ_AfterChange = MyNum
+       
+    
+       mc.mcCntlSetLastError(inst,"Z Move UP to Safe Z: "..FinalSafeZ_AfterChange);
+       
+       mc.mcCntlGcodeExecuteWait(inst,"G90 G53 G0 Z"..FinalSafeZ_AfterChange.."") -- Moves Z asis up to clear new tool
+       
+    
+     end    
+       
+    -----------------------------------------------
+    
+    -- Move X/Y back to org
+    mc.mcCntlSetLastError(inst,"Moving tool over original position X"..orgX.." Y"..orgY);
+    mc.mcCntlGcodeExecuteWait(inst,"G90 G0 X"..orgX.." Y"..orgY)
+    
+    --Move to zero Z with new tool
+    mc.mcCntlSetLastError(inst,"Moving tool original Z"..orgZ);
+    mc.mcCntlGcodeExecuteWait(inst,"G90 G0 Z"..orgZ); -- Move Z to org pos
+    
+    --Restore Position mode, units & feed
+    mc.mcCntlSetPoundVar(inst,4003,positionMode);
+    mc.mcCntlSetPoundVar(inst,4006,units);
+    mc.mcCntlSetPoundVar(inst,2134,feedRate);
+    
+    -- Execute some G code to force modal label UI to refresh
+    -- else, ui and interal settings are out of sync which can cause operator errors
+    mc.mcCntlGcodeExecuteWait(inst,"G"..units);
+    
+    
+    mc.mcCntlSetLastError(inst,"Tool Change Complete!");
+    
+    end
+    
+    if (mc.mcInEditor() == 1) then
+    m6()
+    end
