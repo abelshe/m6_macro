@@ -1,0 +1,42 @@
+function m6()
+	local inst = mc.mcGetInstance("m6()")
+	mc.mcCntlMachineStatePush(inst) -- this saves all your modal states prior to the macro. 
+	local feedmovespeed = "10"
+	local selectedtool = mc.mcToolGetSelected(inst)
+	local currenttool = mc.mcToolGetCurrent(inst)
+	local rc = mc.MERROR_NOERROR
+	local changepos = "G00 G53 X2.57 Y1.01"
+	mc.mcCntlSetLastError(inst, "Moving to tool change location.")
+	mc.mcCntlGcodeExecuteWait(inst, "G00 G53 Z0") --Here we move Z to home. Z++
+	rc = mc.mcCntlGcodeExecuteWait(inst, tostring(changepos))
+	if rc ~= 0 then
+		mc.mcCntlMacroAlarm(inst, 500, "Error with changepos move. Check M6.")
+	end
+	mc.mcCntlSetLastError(inst, "Put new tool in and Cycle Start to proceed.")
+	mc.mcCntlToolChangeManual(inst)
+	
+	--mc.mcCntlGcodeExecuteWait(inst, "G00 G53 Z-1") --This is a fast move down 1" from Z home 		(FAST Z)
+	mc.mcCntlGcodeExecuteWait(inst, " G53 G31 F" ..tostring(feedmovespeed) .. " Z-7.5")
+	
+	
+	
+	local strike = mc.mcCntlProbeGetStrikeStatus(inst)
+	if (strike == 0) then
+		mc.mcCntlMacroAlarm(inst, 500, "Error with changepos move. Check M6.")
+		return
+	end
+	strikeloc, rc = mc.mcAxisGetProbePos(inst, mc.Z_AXIS, true)
+	mc.mcCntlGcodeExecuteWait(inst, "G00 G53 Z0") --Here we move Z to home. Z++
+	mc.mcCntlMachineStatePop(inst) --This pops the push machine state so we can set values like TLO's. 
+	--This must be popped before setting TLO's or anything else or the value will be overwritten back to it's previous state. 
+	rc = mc.mcToolSetData(inst, mc.MTOOL_MILL_HEIGHT, selectedtool ,strikeloc)
+	if rc ~= 0 then
+		mc.mcCntlMacroAlarm(inst, 500, "Error with setting TLO")
+	end
+	mc.mcToolSetCurrent(inst, tonumber(selectedtool))
+	mc.mcCntlSetLastError(inst, "Tool change complete.")
+end
+
+if (mc.mcInEditor() == 1) then
+ m6()
+end
