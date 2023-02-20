@@ -1,0 +1,22 @@
+--    This will pass in the filepath and filename of the image...
+function  m6000()
+    local inst = mc.mcGetInstance('Script m6000') -- 
+	tool = mc.mcToolGetCurrent(inst)
+	mc.mcCntlGcodeExecuteWait(inst, "G43 H" .. tostring(tool))
+		mc.mcCntlSetLastError(inst, "TLO Set, probing work surface.")
+	mc.mcCntlGcodeExecuteWait(inst, "G53 G31 F10 Z-8.2")
+	strike = mc.mcCntlProbeGetStrikeStatus(inst)
+if strike == 0 then
+	mc.mcCntlMacroAlarm(inst, 500, "No strike on Fixture setting")
+	return
+end
+mc.mcCntlSetLastError(inst, "Z set to zero")
+
+  
+end
+
+if(mc.mcInEditor() == 1) then
+    -- If you are in the mcLua editor, this will cause your script to execute if you Run or Debug 
+    -- Make sure your Capitalization and numbers match that of the function you are calling 
+    m6000()
+end
