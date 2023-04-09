@@ -1,0 +1,366 @@
+function m6()
+	
+ local inst=mc.mcGetInstance()
+ mc.mcCntlSetLastError(inst, 'Tool change in progress again')
+ 
+ 
+ ------ Get and compare next and current tools ------
+ local SelectedTool = mc.mcToolGetSelected(inst)
+ local CurrentTool = mc.mcToolGetCurrent(inst) 
+ if (SelectedTool == CurrentTool) then
+ mc.mcCntlSetLastError(inst, "Next tool = Current tool")
+ do return end
+end 
+mc.mcCntlSetLastError(inst, 'Break 0') 
+
+--[[
+-- Define slide distance and direction ------
+
+Only 1 of these should have a non-zero value
+ Changing from a positive to negative slide value, or vice-versa, 
+ will change the direction that the tool slides into the tool fork
+ ]]
+
+ local XSlide = 0.00 -- X direction does not move
+ local YSlide = 2.50 -- Slides into the fork in the +Y direction
+ local dwell = 5.00  -- Duration of time the spindle rests for the drawbar to engage or disengage
+ 
+------- Declare Position Variables ------ 
+ local XPos = 0
+ local YPos = 0
+ local ZPos = 0 
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+-- Defining Tool Station Position Variables, this is the only place fork X, Y, Z values need to edited. --
+-- IF additional fork locations are need, there are three locations that will need to be editing.       --
+-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! --
+-- !!!!!!!!!!!!!!!!!                                                                !!!!!!!!!!!!!!!!!!! --
+-- !!!!!!!!!!!!!!!!!  Important: Tool positions are entered as MACHINE CORRDINATES  !!!!!!!!!!!!!!!!!!! --
+-- !!!!!!!!!!!!!!!!!                                                                !!!!!!!!!!!!!!!!!!! --
+-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! --
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------
+----- Defining Tool Station Postions (section 1) ------
+-----------------------------------------------
+
+--Tool Station 01--
+    local ToolPos_1_X = 0
+    local ToolPos_1_Y = 0
+    local ToolPos_1_Z = 0
+
+--Tool Station 02--
+    local ToolPos_2_X = 0
+    local ToolPos_2_Y = 0
+    local ToolPos_2_Z = 0
+
+--Tool Station 03--
+    local ToolPos_3_X = 0
+    local ToolPos_3_Y = 0
+    local ToolPos_3_Z = 0
+
+--Tool Station 04--
+    local ToolPos_4_X = 0
+    local ToolPos_4_Y = 0
+    local ToolPos_4_Z = 0
+
+--Tool Station 05--
+    local ToolPos_5_X = 0
+    local ToolPos_5_Y = 0
+    local ToolPos_5_Z = 0
+
+--Tool Station 06--
+    local ToolPos_6_X = 0
+    local ToolPos_6_Y = 0
+    local ToolPos_6_Z = 0
+
+--Tool Station 07--
+    local ToolPos_7_X = 0
+    local ToolPos_7_Y = 0
+    local ToolPos_7_Z = 0
+
+--Tool Station 08--
+    local ToolPos_8_X = 0
+    local ToolPos_8_Y = 0
+    local ToolPos_8_Z = 0
+
+--Tool Station 09--
+    local ToolPos_9_X = 0
+    local ToolPos_9_Y = 0
+    local ToolPos_9_Z = 0
+
+--Tool Station 10--
+    local ToolPos_10_X = 0
+    local ToolPos_10_Y = 0
+    local ToolPos_10_Z = 0
+--[[
+To add more tool station positions, copy the code below and paste it after your last
+active tool station position. Don't forget to add and edit code in tool station
+sections 1 and 2 when adding additional tool station locations.  Ensure the # symbol
+is change to the correct tool station position number
+
+--------------- Copy Start------------------
+
+Tool Station # --
+local ToolPos_#_X = 0
+local ToolPos_#_Y = 0
+local ToolPos_#_Z = 0
+
+--------------- Copy Stop ------------------
+]]
+
+
+
+ ------ For spindles that have a partial tool push out, define the amount of movement here ----- 
+ local ZBump = 0.100
+
+ ------ Define the OUTPUT# for the drawbar signal -----
+ local DrawBarOut = mc.OSIG_OUTPUT6
+
+ ------ Get current state ------
+ local CurFeed = mc.mcCntlGetPoundVar(inst, 2134)
+ local CurFeedMode = mc.mcCntlGetPoundVar(inst, 4001)
+ local CurAbsMode = mc.mcCntlGetPoundVar(inst, 4003)
+
+
+ ------ Turn off spindle and wait for decel -------
+local GCode = ""
+ GCode = GCode .. "M5\n"
+ GCode = GCode .. string.format("G04 P%.4f\n", dwell)
+ mc.mcCntlGcodeExecuteWait(inst, GCode)
+
+
+ ------ Move to current tool station change position ------
+ local tool = CurrentTool
+
+
+-----------------------------------------------
+----- Defining Tool Station Postions (section 2) ------
+-----------------------------------------------
+
+--Tool Station 1--
+if tool == 1 then
+    XPos = ToolPos_1_X
+    YPos = ToolPos_1_Y
+    ZPos = ToolPos_1_Z
+
+--Tool Station 2--
+elseif tool == 2 then
+    XPos = ToolPos_2_X
+    YPos = ToolPos_2_Y
+    ZPos = ToolPos_2_Z
+
+--Tool Station 3--
+elseif tool == 3 then
+    XPos = ToolPos_3_X
+    YPos = ToolPos_3_Y
+    ZPos = ToolPos_3_Z
+
+--Tool Station 4--
+elseif tool == 4 then
+    XPos = ToolPos_4_X
+    YPos = ToolPos_4_Y
+    ZPos = ToolPos_4_Z
+
+--Tool Station 5--
+elseif tool == 5 then
+    XPos = ToolPos_5_X
+    YPos = ToolPos_5_Y
+    ZPos = ToolPos_5_Z
+
+--Tool Station 6--
+elseif tool == 6 then
+    XPos = ToolPos_6_X
+    YPos = ToolPos_6_Y
+    ZPos = ToolPos_6_Z
+
+--Tool Station 7--
+elseif tool == 7 then
+    XPos = ToolPos_7_X
+    YPos = ToolPos_7_Y
+    ZPos = ToolPos_7_Z
+
+--Tool Station 8--
+elseif tool == 8 then
+    XPos = ToolPos_8_X
+    YPos = ToolPos_8_Y
+    ZPos = ToolPos_8_Z
+
+--Tool Station 9--
+elseif tool == 9 then
+    XPos = ToolPos_9_X
+    YPos = ToolPos_9_Y
+    ZPos = ToolPos_9_Z
+
+--Tool Station 10--
+elseif tool == 10 then
+    XPos = ToolPos_10_X
+    YPos = ToolPos_10_Y
+    ZPos = ToolPos_10_Z
+
+--[[
+To add more tool station positions, copy the code below and paste it after your last
+active tool station position. Don't forget to add and edit code in tool station 
+sections 1 and 3 when adding additional locations.  Ensure the # symbol is change
+to the correct tool station position number
+
+--------------- Copy Start -----------------
+
+Tool Station # --
+elseif tool == # then
+XPos = ToolPos_#_X
+YPos = ToolPos_#_Y
+ZPos = ToolPos_#_Z
+
+--------------- Copy Stop ------------------
+]]
+
+else
+wx.wxMessageBox("Invalid tool #. Cancelling tool change!\nYour requested tool will now be set as the current tool in the spindle.\n****Ensure that the tool station that you have selected is empty!****")
+mc.mcToolSetCurrent(inst, SelectedTool)
+do return end
+
+end
+
+
+ local GCode = ""
+ GCode = GCode .. "G00 G90 G53 Z0.0\n"
+ GCode = GCode .. string.format("G00 G90 G53 X%.4f Y%.4f\n", (XPos-XSlide), (YPos-YSlide))
+ GCode = GCode .. string.format("G00 G90 G53 Z%.4f\n", ZPos) 
+ GCode = GCode .. string.format("G00 G90 G53 X%.4f Y%.4f\n", XPos, YPos) 
+ mc.mcCntlGcodeExecuteWait(inst, GCode) 
+
+ ------ Open drawbar ------
+
+ local hsig = mc.mcSignalGetHandle(inst, DrawBarOut)
+ mc.mcSignalSetState(hsig, 1) 
+
+
+ ------ Raise spindle, after releasing tool ------ 
+ GCode = "" 
+ GCode = GCode .. string.format("G01 G90 G53 Z0.00 F50.0\n")
+ mc.mcCntlGcodeExecuteWait(inst, GCode)
+
+ ------ Move to next tool station change position ------
+ tool = SelectedTool
+
+
+-----------------------------------------------
+----- Defining Tool Station Postions (section 3) ------
+-----------------------------------------------
+
+----- Define Tool Station Postions ------
+--Tool Station 1
+if tool == 1 then
+    XPos = ToolPos_1_X
+    YPos = ToolPos_1_Y
+    ZPos = ToolPos_1_Z
+
+--Tool Station2
+elseif tool == 2 then
+    XPos = ToolPos_2_X
+    YPos = ToolPos_2_Y
+    ZPos = ToolPos_2_Z
+
+--Tool Station 3
+elseif tool == 3 then
+    XPos = ToolPos_3_X
+    YPos = ToolPos_3_Y
+    ZPos = ToolPos_3_Z
+
+--Tool Station 4
+elseif tool == 4 then
+    XPos = ToolPos_4_X
+    YPos = ToolPos_4_Y
+    ZPos = ToolPos_4_Z
+
+--Tool Station 5
+elseif tool == 5 then
+    XPos = ToolPos_5_X
+    YPos = ToolPos_5_Y
+    ZPos = ToolPos_5_Z
+
+--Tool Station 6
+elseif tool == 6 then
+    XPos = ToolPos_6_X
+    YPos = ToolPos_6_Y
+    ZPos = ToolPos_6_Z
+
+--Tool Station 7
+elseif tool == 7 then
+    XPos = ToolPos_7_X
+    YPos = ToolPos_7_Y
+    ZPos = ToolPos_7_Z
+
+--Tool Station 8
+elseif tool == 8 then
+    XPos = ToolPos_8_X
+    YPos = ToolPos_8_Y
+    ZPos = ToolPos_8_Z
+
+--Tool Station 9--
+elseif tool == 9 then
+    XPos = ToolPos_9_X
+    YPos = ToolPos_9_Y
+    ZPos = ToolPos_9_Z
+
+--Tool Station 10--
+elseif tool == 10 then
+    XPos = ToolPos_10_X
+    YPos = ToolPos_10_Y
+    ZPos = ToolPos_10_Z
+
+--[[
+To add more tool station positions, copy the code below and paste it after your last
+active tool station position. Don't forget to add and edit code in tool station 
+sections 1 and 2 when adding additional locations.  Ensure the # symbol is change
+to the correct tool station position number
+
+--------------- Copy Start ---------------
+
+Tool Station # --
+elseif tool == # then
+XPos = ToolPos_#_X
+YPos = ToolPos_#_Y
+ZPos = ToolPos_#_Z
+
+--------------- Copy Stop ----------------
+]]
+
+else
+wx.wxMessageBox("Invalid tool #.  Retrieving previous tool!")
+SelectedTool = CurrentTool
+
+end
+
+---- Tool Drop off Section ----
+
+ GCode = ""
+ GCode = GCode .. string.format("G00 G90 G53 X%.4f Y%.4f\n", XPos, YPos)
+ GCode = GCode .. string.format("G00 G90 G53 Z%.4f\n", ZPos + ZBump)
+ mc.mcCntlGcodeExecuteWait(inst, GCode) 
+
+ ------ Clamp drawbar ------
+ mc.mcSignalSetState(hsig, 0)
+
+ GCode = ""
+ GCode = GCode .. string.format("G01 G90 G53 Z%.4f F50.0\n", ZPos)
+ GCode = GCode .. string.format("G00 G90 G53 X%.4f Y%.4f\n", (XPos-XSlide), (YPos-YSlide))
+ mc.mcCntlGcodeExecuteWait(inst, GCode) 
+
+
+ ------ Move Z to home position ------
+ GCode = ""
+ mc.mcCntlGcodeExecuteWait(inst, "G00 G90 G53 Z0.0\n")
+
+ ------ Reset state ------
+ mc.mcCntlSetPoundVar(inst, 2134, CurFeed)
+ mc.mcCntlSetPoundVar(inst, 4001, CurFeedMode)
+ mc.mcCntlSetPoundVar(inst, 4003, CurAbsMode)
+
+ ------ Set new tool ------
+ mc.mcToolSetCurrent(inst, SelectedTool)
+ mc.mcCntlSetLastError(inst, string.format("Tool change - Tool: %.0f", (SelectedTool)))
+
+end
