@@ -46,33 +46,33 @@ Only 1 of these should have a non-zero value
 -----------------------------------------------
 
 --Tool Station 01--
-    local ToolPos_1_X = 6.4678
-    local ToolPos_1_Y = 94.8383
+    local ToolPos_1_X = 6.4879
+    local ToolPos_1_Y = 94.5065
     local ToolPos_1_Z = 0
 
 --Tool Station 02--
-    local ToolPos_2_X = 11.4636
-    local ToolPos_2_Y = 94.7978
+    local ToolPos_2_X = 11.5196
+    local ToolPos_2_Y = 94.4947
     local ToolPos_2_Z = 0
 
 --Tool Station 03--
-    local ToolPos_3_X = 16.4894
-    local ToolPos_3_Y = 94.8169
+    local ToolPos_3_X = 16.5689
+    local ToolPos_3_Y = 94.5328
     local ToolPos_3_Z = 0
 
 --Tool Station 04--
-    local ToolPos_4_X = 21.4656
-    local ToolPos_4_Y = 94.8505
+    local ToolPos_4_X = 21.6327
+    local ToolPos_4_Y = 94.4933
     local ToolPos_4_Z = 0
 
 --Tool Station 05--
-    local ToolPos_5_X = 26.683
-    local ToolPos_5_Y = 94.8709
+    local ToolPos_5_X = 26.6116
+    local ToolPos_5_Y = 94.5007
     local ToolPos_5_Z = 0
 
 --Tool Station 99--
-    local ToolPos_99_X = 1.4251
-    local ToolPos_99_Y = 94.8335
+    local ToolPos_99_X = 1.5036
+    local ToolPos_99_Y = 94.5124
     local ToolPos_99_Z = 0
 --[[
 To add more tool station positions, copy the code below and paste it after your last
@@ -236,36 +236,11 @@ elseif tool == 5 then
     YPos = ToolPos_5_Y
     ZPos = ToolPos_5_Z
 
---Tool Station 6
-elseif tool == 6 then
-    XPos = ToolPos_6_X
-    YPos = ToolPos_6_Y
-    ZPos = ToolPos_6_Z
-
---Tool Station 7
-elseif tool == 7 then
-    XPos = ToolPos_7_X
-    YPos = ToolPos_7_Y
-    ZPos = ToolPos_7_Z
-
---Tool Station 8
-elseif tool == 8 then
-    XPos = ToolPos_8_X
-    YPos = ToolPos_8_Y
-    ZPos = ToolPos_8_Z
-
---Tool Station 9--
-elseif tool == 9 then
-    XPos = ToolPos_9_X
-    YPos = ToolPos_9_Y
-    ZPos = ToolPos_9_Z
-
---Tool Station 10--
-elseif tool == 10 then
-    XPos = ToolPos_10_X
-    YPos = ToolPos_10_Y
-    ZPos = ToolPos_10_Z
-
+--Tool Station 99
+elseif tool == 99 then
+    XPos = ToolPos_99_X
+    YPos = ToolPos_99_Y
+    ZPos = ToolPos_99_Z
 --[[
 To add more tool station positions, copy the code below and paste it after your last
 active tool station position. Don't forget to add and edit code in tool station 
