@@ -48,32 +48,32 @@ Only 1 of these should have a non-zero value
 --Tool Station 01--
     local ToolPos_1_X = 6.4879
     local ToolPos_1_Y = 94.5065
-    local ToolPos_1_Z = 0
+    local ToolPos_1_Z = -8.168
 
 --Tool Station 02--
     local ToolPos_2_X = 11.5196
     local ToolPos_2_Y = 94.4947
-    local ToolPos_2_Z = 0
+    local ToolPos_2_Z = -8.168
 
 --Tool Station 03--
     local ToolPos_3_X = 16.5689
     local ToolPos_3_Y = 94.5328
-    local ToolPos_3_Z = 0
+    local ToolPos_3_Z = -8.168
 
 --Tool Station 04--
     local ToolPos_4_X = 21.6327
     local ToolPos_4_Y = 94.4933
-    local ToolPos_4_Z = 0
+    local ToolPos_4_Z = -8.168
 
 --Tool Station 05--
     local ToolPos_5_X = 26.6116
     local ToolPos_5_Y = 94.5007
-    local ToolPos_5_Z = 0
+    local ToolPos_5_Z = -8.168
 
 --Tool Station 99--
     local ToolPos_99_X = 1.5036
     local ToolPos_99_Y = 94.5124
-    local ToolPos_99_Z = 0
+    local ToolPos_99_Z = -8.168
 --[[
 To add more tool station positions, copy the code below and paste it after your last
 active tool station position. Don't forget to add and edit code in tool station
