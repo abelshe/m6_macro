@@ -70,6 +70,26 @@ Only 1 of these should have a non-zero value
     local ToolPos_5_Y = 94.5007
     local ToolPos_5_Z = -8.168
 
+--Tool Station 06--
+    local ToolPos_6_X = 31.6955
+    local ToolPos_6_Y = 94.4717
+    local ToolPos_6_Z = -8.168
+
+--Tool Station 07--
+    local ToolPos_7_X = 36.7154
+    local ToolPos_7_Y = 94.4719
+    local ToolPos_7_Z = -8.168
+
+--Tool Station 08--
+    local ToolPos_8_X = 41.7936
+    local ToolPos_8_Y = 94.4757
+    local ToolPos_8_Z = -8.168
+
+--Tool Station 09--
+    local ToolPos_9_X = 46.7615
+    local ToolPos_9_Y = 94.4665
+    local ToolPos_9_Z = -8.168
+
 --Tool Station 99--
     local ToolPos_99_X = 1.5036
     local ToolPos_99_Y = 94.5124
@@ -148,6 +168,30 @@ elseif tool == 5 then
     XPos = ToolPos_5_X
     YPos = ToolPos_5_Y
     ZPos = ToolPos_5_Z
+
+--Tool Station 6--
+elseif tool == 6 then
+    XPos = ToolPos_6_X
+    YPos = ToolPos_6_Y
+    ZPos = ToolPos_6_Z
+
+--Tool Station 7--
+elseif tool == 7 then
+    XPos = ToolPos_7_X
+    YPos = ToolPos_7_Y
+    ZPos = ToolPos_7_Z
+
+--Tool Station 8--
+elseif tool == 8 then
+    XPos = ToolPos_8_X
+    YPos = ToolPos_8_Y
+    ZPos = ToolPos_8_Z
+
+--Tool Station 9--
+elseif tool == 9 then
+    XPos = ToolPos_9_X
+    YPos = ToolPos_9_Y
+    ZPos = ToolPos_9_Z
 
 --Tool Station 99--
 elseif tool == 99 then
@@ -235,6 +279,30 @@ elseif tool == 5 then
     XPos = ToolPos_5_X
     YPos = ToolPos_5_Y
     ZPos = ToolPos_5_Z
+
+--Tool Station 6--
+elseif tool == 6 then
+    XPos = ToolPos_6_X
+    YPos = ToolPos_6_Y
+    ZPos = ToolPos_6_Z
+
+--Tool Station 7--
+elseif tool == 7 then
+    XPos = ToolPos_7_X
+    YPos = ToolPos_7_Y
+    ZPos = ToolPos_7_Z
+
+--Tool Station 8--
+elseif tool == 8 then
+    XPos = ToolPos_8_X
+    YPos = ToolPos_8_Y
+    ZPos = ToolPos_8_Z
+
+--Tool Station 9--
+elseif tool == 9 then
+    XPos = ToolPos_9_X
+    YPos = ToolPos_9_Y
+    ZPos = ToolPos_9_Z
 
 --Tool Station 99
 elseif tool == 99 then
